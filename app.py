@@ -25,8 +25,9 @@ def dict_factory(cursor, row):
 @app.route('/add_new_user/', methods=['POST'])
 def add_new_user():
      if request.method == "POST":
-        msg = None
-        try:
+         response = {}
+         response['msg']= None
+         try:
             name = request.form['name']
             surname = request.form['surname']
             email = request.form['email']
@@ -38,11 +39,11 @@ def add_new_user():
                 conn.row_factory = dict_factory
                 cur.execute("INSERT INTO user(name, surname, email, username, password) VALUES(?,?,?,?,?)", (name, surname, email, username, password))
                 conn.commit()
-                msg = name + "was successfully added to the database"
-        except Exception as e:
-            conn.rollback()
-            msg = "Error occurred in insert operation: " + str(e)
+                response['msg'] = "Record added successfully"
 
-        finally:
-            conn.close()
-            return jsonify(msg)
+         except Exception as e:
+            conn.rollback()
+            response['msg'] = "Error occurred in insert operation: " + str(e)
+
+         finally:
+            return response
