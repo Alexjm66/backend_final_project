@@ -10,6 +10,10 @@ def init_sqlite_db():
     con.execute('CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, surname TEXT, email TEXT, username TEXT, password TEXT)')
     print("Table created successfully")
 
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM users")
+
+    print(cursor.fetchall())
 
 init_sqlite_db()
 
@@ -47,14 +51,14 @@ def add_new_user():
 
          finally:
             return {'msg': msg}
-# @app.route('/list-users/', methods=['GET'])
-# # def list():
-# #     try:
-# #         with sqlite3.connect('database.db') as conn:
-# #                 cur = conn.cursor()
-# #                 conn.row_factory = dict_factory
-# #                 cur.execute("SELECT * FROM users")
-# #                 print(cur.fetchall())
-# #     except Exception as e:
-# #         conn.rollback()
-# #         response
+@app.route('/list-users/', methods=['GET'])
+def list():
+    try:
+        with sqlite3.connect('database.db') as conn:
+                cur = conn.cursor()
+                conn.row_factory = dict_factory
+                cur.execute("SELECT * FROM users")
+                rows = cur.fetchall()
+    except Exception as e:
+        print("Something went wrong" + str(e))
+    return jsonify(rows)
