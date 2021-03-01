@@ -62,3 +62,5 @@ def list():
     except Exception as e:
         print("Something went wrong" + str(e))
     return jsonify(rows)
+
+
