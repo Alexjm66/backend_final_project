@@ -15,6 +15,8 @@ def init_sqlite_db():
 
     print(cursor.fetchall())
 
+    con.close()
+
 init_sqlite_db()
 
 app = Flask (__name__)
@@ -22,6 +24,7 @@ CORS(app)
 
 def dict_factory(cursor, row):
     d = {}
+
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
@@ -51,6 +54,7 @@ def add_new_user():
 
          finally:
             return {'msg': msg}
+
 @app.route('/list-users/', methods=['GET'])
 def list():
     try:
@@ -63,4 +67,27 @@ def list():
         print("Something went wrong" + str(e))
     return jsonify(rows)
 
+@app.route('/login/', methods=['GET'])
+def login():
+    if request.method == "GET":
+        response = {}
+        response['msg'] = None
+        response['body'] = []
+
+        try:
+            with sqlite3.connect('database.db') as conn:
+                cur = conn.cursor()
+                conn.row_factory = dict_factory
+                cur.execute("SELECT * FROM users")
+                u= cur.fetchall()
+                conn.commit()
+                response['body'] = u
+                response['msg'] = "user logged in succesfully"
+
+        except Exception as e:
+            conn.rollback()
+            response['msg'] = "Error" + str(e)
+
+        finally:
+            return response
 
