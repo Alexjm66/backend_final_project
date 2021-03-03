@@ -8,12 +8,15 @@ def init_sqlite_db():
     print("Created Database successfully")
 
     con.execute('CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, surname TEXT, email TEXT, username TEXT, password TEXT)')
-    print("Table created successfully")
+    print("Users Table created successfully")
+
+    con.execute('CREATE TABLE IF NOT EXISTS admin(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, surname TEXT, email TEXT, username TEXT, password TEXT)')
+    print("Admin table created successfully")
 
     cursor = con.cursor()
-    cursor.execute("SELECT * FROM users")
-
+    cursor.execute("SELECT * FROM admin")
     print(cursor.fetchall())
+
 
     con.close()
 
@@ -24,10 +27,24 @@ CORS(app)
 
 def dict_factory(cursor, row):
     d = {}
-
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
+@app.route('/admin/', methods = ['POST'])
+def admin():
+    try:
+        with sqlite3.connect('database.db') as conn:
+                cur = conn.cursor()
+                conn.row_factory = dict_factory
+                conn.execute("INSERT INTO admin(name, surname, email, username, password) VALUES" '(?,?,?,?,?)' , ('Alex', 'Maart', 'alex@maart.com', 'Alex' , '123456'))
+                conn.commit()
+                msg = "Record added successfully"
+                print(msg)
+    except Exception as e:
+        msg = 'error'+ str(e)
+    finally:
+        conn.close()
+    return {'msg': msg}
 
 @app.route('/')
 @app.route('/add_new_user/', methods=['POST'])
@@ -59,35 +76,13 @@ def add_new_user():
 def list():
     try:
         with sqlite3.connect('database.db') as conn:
-                cur = conn.cursor()
                 conn.row_factory = dict_factory
+                cur = conn.cursor()
                 cur.execute("SELECT * FROM users")
                 rows = cur.fetchall()
     except Exception as e:
         print("Something went wrong" + str(e))
     return jsonify(rows)
 
-@app.route('/login/', methods=['GET'])
-def login():
-    if request.method == "GET":
-        response = {}
-        response['msg'] = None
-        response['body'] = []
 
-        try:
-            with sqlite3.connect('database.db') as conn:
-                cur = conn.cursor()
-                conn.row_factory = dict_factory
-                cur.execute("SELECT * FROM users")
-                u= cur.fetchall()
-                conn.commit()
-                response['body'] = u
-                response['msg'] = "user logged in succesfully"
-
-        except Exception as e:
-            conn.rollback()
-            response['msg'] = "Error" + str(e)
-
-        finally:
-            return response
 
